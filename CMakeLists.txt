@@ -17,10 +17,10 @@ list(APPEND flags "-Wall" "-s" "-fexceptions" "-std=c++17")
 
 if(CMAKE_BUILD_TYPE MATCHES Debug)
    list(APPEND flags "-g")
-   target_compile_definitions(pml_log PUBLIC DEBUG DLL_EXPORTS _MSL_STDINT_H)
+   target_compile_definitions(pml_log PUBLIC DEBUG DLL_EXPORTS _MSL_STDINT_H LOG_DLL)
 else()
    list(APPEND flags "-O3" "-s")
-   target_compile_definitions(pml_log PUBLIC NDEBUG DLL_EXPORTS _MSL_STDINT_H)
+   target_compile_definitions(pml_log PUBLIC NDEBUG DLL_EXPORTS _MSL_STDINT_H LOG_DLL)
 endif()
 
 
@@ -42,3 +42,9 @@ set_target_properties(pml_log PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     install(TARGETS pml_log LIBRARY DESTINATION lib)
 endif()
+
+# demo executable to quickly verify logging
+add_executable(pml_log_demo demo/main.cpp)
+target_include_directories(pml_log_demo PRIVATE ${PROJECT_SOURCE_DIR}/include ${CMAKE_BINARY_DIR}/include)
+target_link_libraries(pml_log_demo PRIVATE pml_log)
+set_target_properties(pml_log_demo PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)

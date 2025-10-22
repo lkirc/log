@@ -7,7 +7,7 @@
 #include "dlllog.h"
 #include "log.h"
 
-#if ((defined(_MSVC_LANG) && MSVC_LANG >=201703L) || __cplusplus >= 201703L)
+#if ((defined(_MSVC_LANG) && _MSVC_LANG >=201703L) || __cplusplus >= 201703L)
 #include <filesystem>
 namespace pml::log
 {
@@ -24,13 +24,11 @@ namespace pml::log
            File(const std::filesystem::path& rootPath, int nTimestamp=kTsTime, TS resolution=TS::kMillisecond);
             virtual ~File(){}
 
-            /** @brief Called by the LogStream when it needs to be flushed - should not be called directly
-            *   @param level the level of the current message that is being flushed
-            *   @param logStream the current message
-            **/
-            void Flush(Level level, const std::string&  logStream, const std::string& sPrefix) override;
 
         private:
+
+            void DoOutputMessage(Level level, const std::string&  logStream, const std::string& sPrefix) override;
+            void Flush() override;
 
             void OpenFile(const std::string& sFileName);
 
@@ -57,13 +55,10 @@ namespace pml::log
            File(const std::string& sRootPath, int nTimestamp=ksTime, TS resolution=TS::kMillisecond);
             virtual ~File(){}
 
-            /** @brief Called by the LogStream when it needs to be flushed - should not be called directly
-            *   @param eLogLevel the level of the current message that is being flushed
-            *   @param logStream the current message
-            **/
-            void Flush(Level level, const std::string&  logStream, const std::string& sPrefix) override;
 
         private:
+            void DoOutputMessage(Level level, const std::string&  logStream, const std::string& sPrefix) override;
+            void Flush() override;
 
             void OpenFile(const std::string& sFilePath, const std::string& sFileName);
             std::string m_sRootPath;

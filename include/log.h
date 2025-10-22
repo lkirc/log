@@ -64,11 +64,7 @@ namespace pml
                  */
                 virtual ~Output(){}
 
-                /** @brief Called by the LogStream when it needs to be flushed - should not be called directly
-                *   @param eLogLevel the level of the current message that is being flushed
-                *   @param sLog the current message
-                **/
-                virtual void Flush(Level level, const std::string&  sLog, const std::string& sPrefix);
+                
 
                 /** @brief Sets the level that a log message must meet to be output by the LogOutput
                 *   @param eLevel the level
@@ -82,6 +78,33 @@ namespace pml
 
 
             protected:
+                friend class Manager;
+                
+                /** @brief Virtual function that should output the message to the desired location
+                *   @param eLogLevel the level of the current message
+                *   @param sLog the current message
+                *   @param sPrefix the prefix of the current message 
+                **/
+                virtual void DoOutputMessage(Level level, const std::string&  sLog, const std::string& sPrefix);
+
+                /** @brief Virtual function that is called when all messages have been processed. Should be overridden if any final processing is needed
+                 * 
+                **/
+                virtual void Flush();
+
+                /** @brief Called by the LogManager to output a message from the stream
+                *   @param eLogLevel the level of the current message
+                *   @param sLog the current message
+                *   @param sPrefix the prefix of the current message 
+                **/
+                void OutputMessage(Level level, const std::string&  sLog, const std::string& sPrefix) {DoOutputMessage(level, sLog, sPrefix);}
+                
+                /**
+                 * @brief Called by the LogManager when all messages have been processed
+                 * 
+                 */
+                void MessagesDone(){Flush(); }
+
                 std::stringstream Timestamp();
                 Level m_level;
                 int m_nTimestamp;

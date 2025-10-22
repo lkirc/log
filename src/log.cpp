@@ -39,10 +39,11 @@ Manager& Manager::Get()
 }
 
 
-Manager::Manager() : m_nOutputIdGenerator(0),
-m_pThread(std::make_unique<std::thread>([this]{Loop();}))
+Manager::Manager() : m_nOutputIdGenerator(0), m_pThread(nullptr)
 {
-
+    // ensure the run flag is set before launching the thread
+    m_bRun = true;
+    m_pThread = std::make_unique<std::thread>([this]{Loop();});
 }
 
 Manager::~Manager()
@@ -76,18 +77,24 @@ void Manager::Loop()
     }
 
     HandleQueue();
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
 }
 
 void Manager::HandleQueue()
 {
     std::scoped_lock lg(m_mutex);
+    if(m_mOutput.empty()) return;
     while(m_qLog.empty() == false)
     {
         for(auto& pairOutput : m_mOutput)
         {
-            pairOutput.second->Flush(m_qLog.front().level, m_qLog.front().sLog, m_qLog.front().sPrefix);
+            pairOutput.second->OutputMessage(m_qLog.front().level, m_qLog.front().sLog, m_qLog.front().sPrefix);
         }
         m_qLog.pop();
+    }
+    for(auto& pairOutput : m_mOutput)
+    {
+        pairOutput.second->MessagesDone();
     }
 }
 
@@ -127,13 +134,18 @@ void Manager::RemoveOutput(size_t nIndex)
 
 /******* Output ********/
 
-void Output::Flush(Level level, const std::string&  sLog, const std::string& sPrefix)
+void Output::DoOutputMessage(Level level, const std::string&  sLog, const std::string& sPrefix)
 {
     if(level >= m_level)
     {
         std::cout << Timestamp().str();
         std::cout << Stream::STR_LEVEL[static_cast<int>(level)] << "\t" << "[" << sPrefix << "]\t" << sLog;
     }
+}
+
+void Output::Flush()
+{
+    std::cout << std::flush;
 }
 
 std::stringstream Output::Timestamp()

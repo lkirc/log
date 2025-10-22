@@ -13,7 +13,7 @@
 
 namespace pml::log
 {
-#if ((defined(_MSVC_LANG) && MSVC_LANG >=201703L) || __cplusplus >= 201703L)
+#if ((defined(_MSVC_LANG) && _MSVC_LANG >=201703L) || __cplusplus >= 201703L)
 
 File::File(const std::filesystem::path& rootPath,int nTimestamp, Output::TS resolution) : Output(nTimestamp, resolution),
 m_rootPath(rootPath)
@@ -43,7 +43,7 @@ void File::OpenFile(const std::string& sFileName)
     }
 }
 
-void File::Flush(Level level, const std::string&  sLog, const std::string& sPrefix)
+void File::DoOutputMessage(Level level, const std::string&  sLog, const std::string& sPrefix)
 {
     if(level >= m_level)// && m_bOk)
     {
@@ -72,6 +72,17 @@ void File::Flush(Level level, const std::string&  sLog, const std::string& sPref
     }
 }
 
+void File::Flush()
+{
+    if(m_ofLog.is_open())
+    {
+        m_ofLog.flush();
+    }
+    else
+    {
+        std::cout << std::flush;
+    }   
+}
 
 #else
 bool isDirExist(const std::string& path)
@@ -203,11 +214,21 @@ void File::Flush(Level level, const std::string&  sLog, const std::string& sPref
         {
             m_ofLog << Timestamp().str();
             m_ofLog << Stream::STR_LEVEL[static_cast<int>(level)] << "\t" << "[" << sPrefix << "]\t" << sLog;
-            m_ofLog.flush();
         }
     }
 }
 
+void File::Flush()
+{
+    if(m_ofLog.is_open())
+    {
+            m_ofLog.flush();
+        }
+    else
+    {
+        std::cout << std::flush;
+    }
+}
 #endif
 
 }
