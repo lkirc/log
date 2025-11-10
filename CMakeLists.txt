@@ -6,9 +6,9 @@ execute_process(COMMAND ${CMAKE_COMMAND} -DNAMESPACE=log -DMAJOR=${PROJECT_VERSI
 
 
 
+if(NOT TARGET pml_log)
 add_library(pml_log SHARED "src/log.cpp" "src/logtofile.cpp" ${CMAKE_BINARY_DIR}/src/log_version.cpp)
 set_target_properties(pml_log PROPERTIES DEBUG_POSTFIX "d")
-
 
 target_include_directories(pml_log PUBLIC ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(pml_log PUBLIC ${CMAKE_BINARY_DIR}/include)
@@ -23,9 +23,7 @@ else()
    target_compile_definitions(pml_log PUBLIC NDEBUG DLL_EXPORTS _MSL_STDINT_H LOG_DLL)
 endif()
 
-
 target_compile_options(pml_log PRIVATE ${flags})
-
 
 #linux specific
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
@@ -35,7 +33,14 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
 endif()
 
 set_target_properties(pml_log PROPERTIES DEBUG_POSTFIX "d")
+    if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+        set_target_properties(pml_log PROPERTIES 
+            RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin/
+            ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin/
+        )
+    else()
 set_target_properties(pml_log PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib/)
+    endif()
 set_target_properties(pml_log PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
 
 #linux specific
@@ -43,8 +48,11 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     install(TARGETS pml_log LIBRARY DESTINATION lib)
 endif()
 
+
 # demo executable to quickly verify logging
 add_executable(pml_log_demo demo/main.cpp)
 target_include_directories(pml_log_demo PRIVATE ${PROJECT_SOURCE_DIR}/include ${CMAKE_BINARY_DIR}/include)
 target_link_libraries(pml_log_demo PRIVATE pml_log)
 set_target_properties(pml_log_demo PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
+
+endif()
