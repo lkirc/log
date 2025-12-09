@@ -239,5 +239,9 @@ namespace pml
 **/
 LOG_EXPORT pml::log::Stream pmlLog(pml::enumLevel elevel = pml::LOG_INFO, const std::string& sPrefix="");
 
+namespace pml {
+// Backwards-compatibility alias for older PAM code
+using LogStream = log::Stream;
+}
 
 #endif
